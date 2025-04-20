@@ -1,19 +1,22 @@
 package com.example.copsboot.user;
 
 import org.springframework.stereotype.Service;
+
 import java.util.Optional;
+
 @Service
 public class UserService {
-    private final UserRepository repository;
+    private final UserRepository repository; //<.>
 
     public UserService(UserRepository repository) {
         this.repository = repository;
     }
 
-    public Optional<User> findUserByAuthServerId(AuthServerId authServerId) {
+    public Optional<User> findUserByAuthServerId(AuthServerId authServerId) { //<.>
         return repository.findByAuthServerId(authServerId);
     }
 
+    // tag::createUser[]
     public User createUser(CreateUserParameters createUserParameters) {
         UserId userId = repository.nextId();
         User user = new User(userId, createUserParameters.email(),
@@ -21,4 +24,5 @@ public class UserService {
                 createUserParameters.mobileToken());
         return repository.save(user);
     }
+    // end::createUser[]
 }

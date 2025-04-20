@@ -41,12 +41,12 @@ public class UserRestController {
     // tag::createUser[]
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("hasRole('OFFICER')")//<.>
+    @PreAuthorize("hasRole('OFFICER')") //<.>
     public UserDto createUser(@AuthenticationPrincipal Jwt jwt,
-                              @RequestBody CreateUserRequest request) { //<.>
-        CreateUserParameters parameters = request.toParameters(jwt); //<.>
+                              @RequestBody CreateUserRequest request) {
+        CreateUserParameters parameters = request.toParameters(jwt);
         User user = userService.createUser(parameters);
-        return UserDto.fromUser(user); //<.>
+        return UserDto.fromUser(user);
     }
     // end::createUser[]
 }
