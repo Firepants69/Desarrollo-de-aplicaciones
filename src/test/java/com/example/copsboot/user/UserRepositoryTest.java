@@ -1,12 +1,18 @@
 package com.example.copsboot.user;
 
+import com.example.copsboot.infrastructure.SpringProfiles;
 import com.example.orm.jpa.InMemoryUniqueIdGenerator;
 import com.example.orm.jpa.UniqueIdGenerator;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.util.HashSet;
 import java.util.Locale;
@@ -16,12 +22,17 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE) //<1>
+@ActiveProfiles(SpringProfiles.REPOSITORY_TEST) //<2>
 public class UserRepositoryTest {
 
     @Autowired
     private UserRepository repository;
+    @PersistenceContext
+    private EntityManager entityManager;
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
-    //tag::testStoreUser[]
     @Test
     public void testStoreUser() {
         User user = repository.save(new User(repository.nextId(),
@@ -31,10 +42,13 @@ public class UserRepositoryTest {
         assertThat(user).isNotNull();
 
         assertThat(repository.count()).isEqualTo(1L);
-    }
-    //end::testStoreUser[]
 
-    //tag::testconfig[]
+        entityManager.flush(); //<3>
+
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM copsboot_user", Long.class)).isEqualTo(1L); //<4>
+        assertThat(jdbcTemplate.queryForObject("SELECT email FROM copsboot_user", String.class)).isEqualTo("alex.foley@beverly-hills.com");
+    }
+
     @TestConfiguration
     static class TestConfig {
         @Bean
@@ -42,5 +56,4 @@ public class UserRepositoryTest {
             return new InMemoryUniqueIdGenerator();
         }
     }
-    //end::testconfig[]
 }

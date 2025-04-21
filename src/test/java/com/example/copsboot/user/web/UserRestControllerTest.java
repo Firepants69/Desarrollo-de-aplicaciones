@@ -1,13 +1,10 @@
 package com.example.copsboot.user.web;
 
-import com.c4_soft.springaddons.security.oauth2.test.webmvc.AutoConfigureAddonsWebmvcResourceServerSecurity;
-import com.example.copsboot.infrastructure.security.WebSecurityConfiguration;
+import com.example.copsboot.infrastructure.test.CopsbootControllerTest;
 import com.example.copsboot.user.*;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.web.servlet.MockMvc;
@@ -22,10 +19,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(UserRestController.class)
-@AutoConfigureAddonsWebmvcResourceServerSecurity //<.>
-@Import(WebSecurityConfiguration.class) //<.>
+// tag::class-annotations[]
+@CopsbootControllerTest(UserRestController.class)
 class UserRestControllerTest {
+    // end::class-annotations[]
 
     @Autowired
     private MockMvc mockMvc;
