@@ -4,6 +4,7 @@ import com.example.copsboot.user.AuthServerId;
 import com.example.copsboot.user.CreateUserParameters;
 import com.example.copsboot.user.User;
 import com.example.copsboot.user.UserService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -43,7 +44,7 @@ public class UserRestController {
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasRole('OFFICER')")
     public UserDto createUser(@AuthenticationPrincipal Jwt jwt,
-                              @RequestBody CreateUserRequest request) {
+                              @Valid @RequestBody CreateUserRequest request) {
         CreateUserParameters parameters = request.toParameters(jwt);
         User user = userService.createUser(parameters);
         return UserDto.fromUser(user);

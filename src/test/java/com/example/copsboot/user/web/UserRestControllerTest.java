@@ -12,10 +12,11 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -81,4 +82,23 @@ class UserRestControllerTest {
                                 """))
                 .andExpect(status().isForbidden()); // <.>
     }
+
+    // tag::emptyToken[]
+    @Test
+    void givenEmptyMobileToken_badRequestIsReturned() throws Exception {
+        mockMvc.perform(post("/api/users")
+                        .with(jwt().jwt(builder -> builder.subject(UUID.randomUUID().toString()))
+                                .authorities(new SimpleGrantedAuthority("ROLE_OFFICER")))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                    "mobileToken": ""
+                                }
+                                """)) //<.>
+                .andExpect(status().isBadRequest()) //<.>
+                .andDo(print()); //<.>
+
+        verify(userService, never()).createUser(any(CreateUserParameters.class)); //<.>
+    }
+    // end::emptyToken[]
 }
