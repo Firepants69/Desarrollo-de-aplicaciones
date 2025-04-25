@@ -1,0 +1,11 @@
+{
+    "realm": "copsboot",
+    "enabled": true,
+    "users": [],
+    "clients": [],
+    "roles": {
+      "realm": [],
+      "client": {}
+    }
+  }
+  
