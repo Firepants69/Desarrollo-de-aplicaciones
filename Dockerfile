@@ -1,22 +1,25 @@
-FROM openjdk:17-slim
+FROM eclipse-temurin:17-jdk-jammy AS builder
 
 WORKDIR /app
 
-# Instala curl para healthchecks y otras dependencias necesarias
 RUN apt-get update && \
-    apt-get install -y curl && \
+    apt-get install -y dos2unix && \
     rm -rf /var/lib/apt/lists/*
 
-# Copia el script de espera (asegúrate de que el script esté en el mismo directorio que el Dockerfile)
-COPY wait-for-keycloak.sh /wait-for-keycloak.sh
-RUN chmod +x /wait-for-keycloak.sh
+COPY .mvn/ .mvn/
+COPY mvnw pom.xml ./
 
-# Copia el archivo JAR de la aplicación
-ARG JAR_FILE=target/copsboot-*.jar
-COPY ${JAR_FILE} app.jar
+RUN dos2unix mvnw && \
+    chmod +x mvnw && \
+    ./mvnw --version
 
-# Expón el puerto que tu aplicación usará
+RUN ./mvnw dependency:go-offline -DskipTests
+
+COPY src ./src
+RUN ./mvnw clean package -DskipTests -Dmaven.test.skip=true
+
+FROM eclipse-temurin:17-jre-jammy
+WORKDIR /app
+COPY --from=builder /app/target/*.jar app.jar
 EXPOSE 8080
-
-# Comando modificado para esperar a Keycloak y luego iniciar la aplicación
-ENTRYPOINT ["/wait-for-keycloak.sh", "keycloak", "java", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]

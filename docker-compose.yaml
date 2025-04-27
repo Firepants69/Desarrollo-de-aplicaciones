@@ -1,63 +1,26 @@
 version: '3'
+
 services:
   db:
     image: 'postgres:16.0'
     ports:
       - 5432:5432
     environment:
-      POSTGRES_USER: postgres
       POSTGRES_PASSWORD: my-postgres-db-pwd
-      POSTGRES_DB: copsbootdb
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
+      POSTGRES_DB: copsbootdb  #Base de datos que se creará automáticamente
 
-  flyway:
-    image: flyway/flyway:latest
-    environment:
-      FLYWAY_URL: jdbc:postgresql://db:5432/copsbootdb
-      FLYWAY_USER: postgres
-      FLYWAY_PASSWORD: my-postgres-db-pwd
-    command: -baselineOnMigrate=true migrate  # Cambiado baseline a migrate
-    depends_on:
-      - db
-    volumes:
-      - ./db/migrations:/flyway/sql  # Asegúrate de tener los scripts de migración en ./db/migrations
-
-
-  keycloak:
+  identity:
     image: 'quay.io/keycloak/keycloak:22.0.1'
-    command: start-dev --import-realm
+    entrypoint: >
+      /opt/keycloak/bin/kc.sh start-dev --import-realm
     ports:
       - '8180:8080'
     environment:
       KEYCLOAK_LOGLEVEL: 'INFO'
       KEYCLOAK_ADMIN: 'admin'
       KEYCLOAK_ADMIN_PASSWORD: 'admin-secret'
-      KC_DB: postgres
-      KC_DB_URL: jdbc:postgresql://db:5432/copsbootdb
-      KC_DB_USERNAME: postgres
-      KC_DB_PASSWORD: my-postgres-db-pwd
-      KC_HOSTNAME: 'keycloak:8080'  # Cambiado de localhost a keycloak:8080
+      KC_HOSTNAME: 'localhost'
       KC_HEALTH_ENABLED: 'true'
       KC_METRICS_ENABLED: 'true'
     volumes:
-      - ./realm-export:/opt/keycloak/data/import
-    depends_on:
-      - db
-
-  app:
-    build: .
-    ports:
-      - '8080:8080'
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/copsbootdb
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: my-postgres-db-pwd
-      SPRING_PROFILES_ACTIVE: local
-      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/copsboot  # Cambiado localhost por keycloak
-    depends_on:
-      - db
-      - keycloak
-
-volumes:
-  postgres_data:
+      - ./realms:/opt/keycloak/data/import

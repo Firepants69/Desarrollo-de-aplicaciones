@@ -7,5 +7,6 @@ import java.util.Optional;
 //tag::class[]
 public interface UserRepository extends CrudRepository<User, UserId>, UserRepositoryCustom {
     Optional<User> findByAuthServerId(AuthServerId authServerId);
+    Optional<User> findByMobileToken(String mobileToken);
 }
 //end::class[]
